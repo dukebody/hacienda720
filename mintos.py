@@ -13,6 +13,7 @@ MINTOS_LOAN_BALANCES_FILE = "Mintos Investor Loan Balances 2023.csv"
 MINTOS_LOAN_BALANCES_PREVIOUS_EXERCISE_FILE = "Mintos Investor Loan Balances 2023.csv"
 
 OUTPUT_FILENAME = "test.720"
+CSV_DELIMITER = ","
 
 YEAR = "2023"
 NAME = "NOMBRE APELLIDO1 APELLIDO2"
@@ -32,7 +33,7 @@ def get_asset_data_from_mintos_balance_sheet(filename):
     # leer archivo de Mintos a dict
     data = []
     with open(filename, "r") as file_handler:
-        reader = DictReader(file_handler)
+        reader = DictReader(file_handler, delimiter=CSV_DELIMITER)
         data = [row for row in reader]
     # generar datos de cada valor
     assets = {}
