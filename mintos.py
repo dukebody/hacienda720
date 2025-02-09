@@ -23,7 +23,7 @@ PHONE = "600112233"
 
 
 def comma_to_dot(amount):
-    return amount.replace(",", ".")
+    return amount.replace(".", "").replace(",", ".")
 
 
 def get_asset_data_from_mintos_balance_sheet(filename):
