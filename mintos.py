@@ -1,3 +1,4 @@
+import re
 from csv import DictReader
 from decimal import Decimal
 
@@ -23,7 +24,19 @@ PHONE = "600112233"
 
 
 def comma_to_dot(amount):
-    return amount.replace(".", "").replace(",", ".")
+    """
+    Converts a number string from either Spanish (12.345,67) or English (12,345.67) format
+    into a normalized format (12345.67)
+    """
+    # Check if it's in Spanish format (thousands separator is "." and decimal separator is ",")
+    if re.search(r"\.\d{3},", amount):
+        amount = amount.replace(".", "").replace(",", ".")
+
+    # Check if it's in English format (thousands separator is "," and decimal separator is ".")
+    elif re.search(r",\d{3}\.", amount):
+        amount = amount.replace(",", "")
+
+    return amount
 
 
 def get_asset_data_from_mintos_balance_sheet(filename):
