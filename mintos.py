@@ -7,6 +7,14 @@ OPERATION_MODIFICATION = "M"
 OPERATION_CANCELLATION = "C"
 
 
+# Algunos issuers no tienen el registration number en el extracto.
+# Se usarán estos reemplazos.
+ISSUER_NAMES_TO_REGISTRATION_NUMBERS = {
+    "SIA Mintos Finance No.47": "50203493941",
+    "SIA Mintos Finance No.49": "40203515541",
+}
+
+
 ## CAMBIAR ESTOS DATOS DE ABAJO
 MINTOS_LOAN_BALANCES_FILE = "Mintos Investor Loan Balances 2024.csv"
 
@@ -29,11 +37,11 @@ def comma_to_dot(amount):
     into a normalized format (12345.67)
     """
     # Check if it's in Spanish format (thousands separator is "." and decimal separator is ",")
-    if re.search(r"\.\d{3},", amount):
+    if re.search(r"\b\d{1,3}(?:\.\d{3})*(?:,\d+)?\b", amount):
         amount = amount.replace(".", "").replace(",", ".")
 
     # Check if it's in English format (thousands separator is "," and decimal separator is ".")
-    elif re.search(r",\d{3}\.", amount):
+    elif re.search(r"\b\d{1,3}(?:,\d{3})*(?:\.\d+)?\b", amount):
         amount = amount.replace(",", "")
 
     return amount
@@ -60,16 +68,16 @@ def get_asset_data_from_mintos_balance_sheet(filename):
                 comma_to_dot(loan["Outstanding investments LOC"])
             )
         else:
-            if (
-                loan["Issuer name"] == "SIA Mintos Finance No.47"
-                and loan["Issuer registration number"] == ""
-            ):
-                loan["Issuer registration number"] = "50203493941"
-
+            # si no está disponible el registration number en el archivo, tratar de
+            # encontrarlo en la tabla estática
+            registration_number = (
+                loan["Issuer registration number"] 
+                or ISSUER_NAMES_TO_REGISTRATION_NUMBERS.get(loan["Issuer name"], "")
+            )
             assets[loan["ISIN"]] = {
                 "amount": Decimal(comma_to_dot(loan["Outstanding investments LOC"])),
                 "issuer_name": loan["Issuer name"],
-                "issuer_registration_number": loan["Issuer registration number"],
+                "issuer_registration_number": registration_number,
             }
 
     return assets
